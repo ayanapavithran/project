@@ -1,0 +1,18 @@
+{
+    "database-config": {
+        "host": "localhost",
+        "port": 3306,
+        "username": "root",
+        "password": "ayana123",
+        "database": "auth"
+    },
+    "mail-config": {
+        "enableEtherealEmail": true,
+        "host": "smtp.ethereal.email",
+        "port": 587,
+        "secure": false,
+        "user": "tom.gislason@ethereal.email",
+        "password": "CeEHsqpK564uxtPaDc"
+    },
+    "resetPwdLink": "http://localhost:3000/reset?"
+}
