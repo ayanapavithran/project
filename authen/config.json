@@ -14,5 +14,6 @@
         "user": "tom.gislason@ethereal.email",
         "password": "CeEHsqpK564uxtPaDc"
     },
-    "resetPwdLink": "http://localhost:3000/reset?"
+    "resetPwdLink": "http://localhost:3000/reset?",
+    "imagePath": "images/"
 }

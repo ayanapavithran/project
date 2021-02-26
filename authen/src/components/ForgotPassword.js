@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 import 'w3-css/w3.css';
 import { validateEmail } from './Util';
 import axios from 'axios';
-import md5 from 'md5';
 export default (props) => {
    
     const [message, setMessage] = useState({});
@@ -14,17 +13,19 @@ export default (props) => {
     
         setMessage({});
         if (validateEmail(email)) {
-            axios.post("http://localhost:50003/api/v1/forget/password",{
+            axios.post("http://localhost:50001/api/v1/forget/password",{
             email: email,
             
-        }).then((response)=>{
+            }).then((response)=>{
             console.log(response);
+            setMessage({
+                message: response.data.message
+            });
         });
         } else {
         
             setMessage({
                 message: "Please Enter a valid Email Id!",
-                isError: true
             });
         }
     }

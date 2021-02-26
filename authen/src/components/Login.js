@@ -1,12 +1,11 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import 'w3-css/w3.css';
 import { validateEmail } from './Util';
 import axios from 'axios';
 import md5 from 'md5';
 // eslint-disable-next-line import/no-anonymous-default-export
-export default () => {
-    const [loginstatus, setLoginStatus] = useState({});
+export default (props) => {
     const [message, setMessage] = useState({});
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -14,26 +13,33 @@ export default () => {
     const onLogin = () => {
         if(validateEmail(email)) {
             if(password) {
-                axios.post("http://localhost:50003/api/v1/login",{
+                axios.post("http://localhost:50001/api/v1/login",{
                   
                 email: email,
                 password:password,
             
                 }).then((response)=>{
                     setMessage({
-                        message: response.data
+                        message: response.data.message
                     });
                     
-                })
+                    if(response.data) {
+                        console.log("login success");
+                        localStorage.setItem("userDetails", JSON.stringify(response.data.data));
+                        console.log(localStorage);
+                       
+                        props.history.push("upload");
+                    }
+                });
           
             }
-            else {
+            else{
                      setMessage({
                      message: "Please Enter the Password!",
                 }); 
               
             }
-        }else {
+        }else{
             setMessage({
                 message: "Please Enter a valid Email Id!",
             });
@@ -64,6 +70,7 @@ export default () => {
                  <button className ="w3-button w3-blue " type= "button"  onClick={onLogin}> Login</button>
                 
                  <Link to="/forgot">Forgot password</Link>
+                 <Link to="/home">home</Link>
                  <div>
                       
                   </div>

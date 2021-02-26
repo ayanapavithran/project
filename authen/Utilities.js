@@ -13,12 +13,12 @@ exports.sendMail = async (to, subject, text, html) => {
     let transporter = nodemailer.createTransport({
         host: mailConfig.host,
         port: mailConfig.port,
-        secure: mailConfig.secure, // true for 465, false for other ports
+        secure: mailConfig.secure, 
         auth: {
-            user: mailConfig.user, // generated ethereal user
-            pass: mailConfig.password, // generated ethereal password
-            // user: mailConfig.enableEtherealEmail ? testAccount && testAccount.user: mailConfig.user, // generated ethereal user
-            // pass: mailConfig.enableEtherealEmail ? testAccount && testAccount.pass: mailConfig.password, // generated ethereal password
+            user: mailConfig.user, 
+            pass: mailConfig.password, 
+            // user: mailConfig.enableEtherealEmail ? testAccount && testAccount.user: mailConfig.user, 
+            // pass: mailConfig.enableEtherealEmail ? testAccount && testAccount.pass: mailConfig.password,
         },
     });
 
@@ -57,6 +57,7 @@ exports.generateAuthKey = (length) => {
 }
 
 exports.getMailTemplate = (email, insertId, auth) => {
+   
     return `<div><h1>Reset Your Password</h1><br/><p>Use the below link to Reset Your passoword.</p>
             <p>Note: This link will be only active for 15 minutes, and will only work for 1 time.</p>
             <p>For resetting password click this link : <a target="_blank" href="${config.resetPwdLink}a=${auth}&u=${insertId}">LINK</a></p></div>`;

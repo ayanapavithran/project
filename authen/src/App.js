@@ -5,6 +5,10 @@ import Login from './components/Login';
 import Register from './components/Register';
 import ForgotPassword from './components/ForgotPassword';
 import ResetPassword from './components/ResetPasswword.';
+import Gallery from './components/Gallery';
+import UploadHome from './components/UploadHome';
+import LoadImages from './components/LoadImages';
+
 
 const App = () => {
 
@@ -14,10 +18,13 @@ const App = () => {
       <Route path="/register" component={Register} />
        <Route path="/forgot" component={ForgotPassword} /> 
      <Route path="/reset" component={ResetPassword} /> 
-
-       <Route path="/" component={Login} /> 
+      <Route path="/gallery" component={LoadImages} />  
+     <Route path="/upload" component={UploadHome} /> 
+       {/* <Route path="/" component={Login} />  */}
+       <Route path="/gallery1" component={Gallery} />
     </Switch>
   </BrowserRouter>
+
 
 }
 

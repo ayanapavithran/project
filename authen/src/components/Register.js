@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import 'w3-css/w3.css';
+import md5 from 'md5';
 import { validateEmail } from './Util';
 import axios from 'axios';
 export default () => {
@@ -24,7 +25,6 @@ export default () => {
         if(!fname || !email || !password || !cpassword) {
             setMessage({
                 message: "Please Fill all the fields marked with *",
-                isError: true
             });
             return false;
         }
@@ -32,7 +32,6 @@ export default () => {
         if(password !== cpassword) {
             setMessage({
                 message: "Password and Confirm Password doesnt match!",
-                isError: true
             });
             return false;
         }
@@ -40,17 +39,16 @@ export default () => {
         if (!validateEmail(email)) {
             setMessage({
                 message: "Please Enter a valid Email Id!",
-                isError: true
             });
             return false;
         }
 
         
-        axios.post("http://localhost:50003/api/v1/register",{
+        axios.post("http://localhost:50001/api/v1/register",{
             fname: fname,
         lname:lname,
         email: email,
-        password:password,
+        password:md5(password),
         cpassword: cpassword
         }).then((response)=>{
             console.log(response);

@@ -1,8 +1,13 @@
-const express = require('express'), bodyParser = require('body-parser'), app = express(), cors = require('cors'), PORT = 50003;
-
+const express = require('express'), bodyParser = require('body-parser'), app = express(), cors = require('cors'), PORT = 50001;
+const multer = require('multer')
+const config = require('./authen/config.json');
+//fileUpload = require('express-fileupload'),
+path = require('path')
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(cors());
+app.use(express.static(path.join(__dirname, 'public')));
+//app.use(fileUpload());
 const Utilities = require('./authen/Utilities');
 const mysql = require('mysql');
 app.use('/', (req, res, next) => {
@@ -12,6 +17,18 @@ app.use('/', (req, res, next) => {
     next();
 });
 app.get('/api/v1/login',(req,res)=>res.send("hii"))
+
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, 'images/'),
+    filename: (req, file, cb) => {
+        const filename = Date.now() + "-" + file.originalname;
+        console.log("File is:", filename);
+        req.file = file;
+        req.filename = filename;
+        cb(null, filename)}
+});
+const upload = multer({storage :storage});
 app.post('/api/v1/register', (req,res)=>{
     const fname = req.body.fname;
     const lname= req.body.lname;
@@ -33,7 +50,7 @@ app.post('/api/v1/register', (req,res)=>{
             console.log("Error Occured :", err);
         }
         else{
-            res.json({message :"success"});
+            res.json({message :"Registration success"});
             
         }
       });
@@ -50,26 +67,30 @@ app.post('/api/v1/login', (req,res)=>{
     db.query("SELECT * FROM user_details WHERE email = ? AND password = ?",
      [email,password],
       (err, result) => {
-           if(err || result.length==0) {
-             res.status(500).send({error: "login failed"});
-            }
-            else{
-                res.status(200).send({success:"login successs.."}) 
-           
-            }
-        });
+        if(result && result.length==1) {
+            if (result[0].password === password) {
+                res.json({message:"login successs..", data:{id: result[0].id,
+                fname: result[0].fname,
+                lname: result[0].lname,
+                email,
+                created_on: result[0].created_on}}) ;
+                return false;
+            }else
+            throw "Invalid Credentials!";
+        }
+     });
    
 });
 app.post('/api/v1/reset/password', (req,res)=>{
  
     const password = req.body.password;
     const userId = req.body.userId;
-    db.query("UPDATE user_details SET password = ? WHERE id = ?", [password, userId], (err, res) => {
+    db.query("UPDATE user_details SET password = ? WHERE id = ?", [password, userId], (err, resp) => {
         if (err) {
             console.error("Update password error ::", err);
         
         } else {
-            console.log("ur password has been resetted")
+            res.json({message:"ur password has been resetted"});
             
         } 
         }
@@ -77,25 +98,26 @@ app.post('/api/v1/reset/password', (req,res)=>{
 });
 app.post('/api/v1/reset/password/validate', (req,res)=>{
     const id= req.body.id;
-    const authentication = req.body.authentication;
+    const auth = req.body.auth;
     
-    db.query("SELECT * FROM authentication WHERE id = ? AND authentication = ?", [id, authentication], (err, res) => {
+    db.query("SELECT * FROM authentication WHERE id = ? AND authentication = ?", [id, auth], (err, resp) => {
         if (err) {
             console.error("User Authentication Error ::", err);
             
         } 
-        if(res && res.length > 0) {
-            const previosTime = new Date(res[0].created_on);
+        console.log("result",resp)
+        if(resp && resp.length > 0) {
+            const previosTime = new Date(resp[0].created_on);
             const lasTime = Utilities.addMinutesToDate(previosTime, 15);
             const currentTime = new Date();
             console.log(previosTime, lasTime, currentTime);
             const greater = Utilities.compareDates(currentTime, lasTime);
-            sql.query("DELETE FROM authentication WHERE id = ? AND authentication = ?", [id, authentication], (err, resp) => {
+            db.query("DELETE FROM authentication WHERE id = ? AND authentication = ?", [id, auth], (err, respo) => {
                 if (err) {
                     console.error("User Authentication Deletion Error ::", err);
                 
                 } else {
-                    console.log("Authentication Deleted",resp);
+                    console.log("Authentication Deleted",);
                 
                 }
             });
@@ -103,7 +125,7 @@ app.post('/api/v1/reset/password/validate', (req,res)=>{
                 console.log("Token Expired!");
                 throw "This token got expired. Please try again later!";
             }else {
-                res.json(Utilities.Response(0, "Success", { id: result[0].user_id }));
+                res.json({ id: resp[0].user_id });
             }
         }else throw "Invalid Credentials!";
     });
@@ -127,9 +149,13 @@ app.post('/api/v1/forget/password', (req,res)=>{
             
             console.log("Generating Authentication");
             
-            const email = req.body.email;
-            const authentication = req.body.authentication;
-            db.query("INSERT INTO authentication (user_Id,email,authentication) VALUES (?,?, ?)",[result[0].id,email,authKey], (err, res) => {
+        
+            const userid = result[0].id;
+            const authentication = authKey;
+            console.log("user id",userid);
+            console.log("mail",email);
+            console.log("authky",authentication);
+            db.query("INSERT INTO authentication (user_Id,email,authentication) VALUES (?,?, ?)",[userid,email,authKey], (err, result) => {
                 if (err) {
                     console.error("Authentication insertion error ::", err);
                 
@@ -138,17 +164,104 @@ app.post('/api/v1/forget/password', (req,res)=>{
                     
                 }
                  console.log("Insertion Success!");
-                 console.log("Generating Email Template");
-                 const template = Utilities.getMailTemplate(email, result, authKey);
+                 console.log("Generating Email Template" ,result.insertId);
+                 const template = Utilities.getMailTemplate(email, result.insertId, authKey);
                  console.log("Got Template:", template);
                  console.log("Trying to send mail...");
                  const send =  Utilities.sendMail(email, "Reset Your Password", "", template);
                  console.log("GOT RESULTS", send);  
             
             });
+            res.json({message:"reset password link has been sent to your registerd email"});
         }else throw "This email is not registered!";
     });
 });
+app.post('/api/v1/images/upload/:id',upload.single("imageFile") ,(req,resp)=>{
+       const {
+              id
+        } = req.params;
+        const {
+             file
+        } = req;
+    console.log("Request came with::", id, file.filename);
+
+    if (!id) {
+        throw "Invalid User Id!";
+    }
+
+    console.log("INSERTING", id, file.filename);
+    db.query("INSERT INTO images (user_id, image_path) values (?,?)", [id, file.filename], (err, res) => {
+    if (err) {
+        console.error("Images insertion error ::", err);
+    } else {
+        console.log("inserted");
+        resp.json({message:"1 Row inserted"});
+    }
+    });
+})
+app.get('/api/v1/images/load/:id', (req,res)=>{
+    const {
+        id
+    } = req.params;
+    console.log("Request came with::", id);
+
+    if (!id) {
+      throw "Invalid Image Id!";
+    }
+    console.log("Getting image details with id:", id);
+                    db.query("SELECT * FROM images WHERE id = ?", [id], (err, respo) => {
+                        if (err) {
+                              console.error("Images Select Error ::", err);
+                        } if (respo && respo.length > 0) {
+                            const currentImg = respo[0];
+                            const p = path.join(__dirname, config.imagePath + currentImg.image_path);
+                            console.log("IMAGE PATH:", p);
+                            res.sendFile(p);
+                               console.log("Images Details:", respo[0]);
+                        }else throw "Image not Found!";
+                    });
+});
+app.get('/api/v1/images/getall/:id', (req,res)=>{
+    const {
+        id
+    } = req.params;
+    console.log("Request came with::", id);
+
+    if (!id) {
+         throw "Invalid User Id!";
+    }  
+    console.log("Getting image details with", id);
+         db.query("SELECT * FROM images WHERE user_id = ?", [id], (err, result) => {
+             if (err) {
+                    console.error("Images Select Error ::", err);
+            }
+            if(result && result.length > 0) {
+                console.log("resultssssssss",result);
+                const images = result.map(val => ({ file: `http://localhost:50001/api/v1/images/load/${val.id}` }));
+                console.log(images);
+                res.status(200).json({images}) ;
+            }else throw "No Images Found!";
+    
+        });
+});
+
+
+
+// app.post('/api/v1/gallery', (req, res) => {
+//     const image = req.body.image;
+//     const images = [];
+//     db.query("INSERT INTO user_img (image) VALUES (?)",
+//          [image],
+//           (err, result) => {
+//             if(err) {
+//                 console.log("Error Occured :", err);
+//             }
+//             else{
+//                 res.json({message :"image uploaded"});
+            
+//             }
+//           });
+//     });
 
 app.listen(PORT, err => {
     if (err)
@@ -180,4 +293,5 @@ app.get('api/v1/get', (req,res)=>{
     );
    
 });
+
 
