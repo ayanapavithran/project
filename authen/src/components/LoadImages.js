@@ -40,6 +40,7 @@ const LoadImages = ({ userId }) => {
         
         {images && images.map((val, idx) => 
         <div className ="w3-padding-small w3-third ">
+           
             <div className =" w3-card-4 w3-border">
         <img src ={val.file} key={idx}  alt ="imag"  style={{width:'100%',height:'320px'}}/></div></div>)}   
         </div>

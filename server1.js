@@ -81,6 +81,22 @@ app.post('/api/v1/login', (req,res)=>{
      });
    
 });
+app.get('/api/v1/users/list', (req,res)=>{
+    
+    db.query("SELECT * FROM user_details",
+
+      (err, result) => {
+        if(result && result.length>0) {
+            const users = result;
+            console.log("userrrrrr",users);
+             res.status(200).json({users}) ;
+                return false;
+            }else
+            throw "Invalid Credentials!";
+        }
+     );
+   
+});
 app.post('/api/v1/reset/password', (req,res)=>{
  
     const password = req.body.password;
@@ -210,6 +226,7 @@ app.get('/api/v1/images/load/:id', (req,res)=>{
     }
     console.log("Getting image details with id:", id);
                     db.query("SELECT * FROM images WHERE id = ?", [id], (err, respo) => {
+                     try {
                         if (err) {
                               console.error("Images Select Error ::", err);
                         } if (respo && respo.length > 0) {
@@ -219,6 +236,10 @@ app.get('/api/v1/images/load/:id', (req,res)=>{
                             res.sendFile(p);
                                console.log("Images Details:", respo[0]);
                         }else throw "Image not Found!";
+                     }catch(err) {
+                        console.log("ERROR ::", err);
+                     }
+                    
                     });
 });
 app.get('/api/v1/images/getall/:id', (req,res)=>{
@@ -232,7 +253,8 @@ app.get('/api/v1/images/getall/:id', (req,res)=>{
     }  
     console.log("Getting image details with", id);
          db.query("SELECT * FROM images WHERE user_id = ?", [id], (err, result) => {
-             if (err) {
+            try { 
+            if (err) {
                     console.error("Images Select Error ::", err);
             }
             if(result && result.length > 0) {
@@ -241,6 +263,9 @@ app.get('/api/v1/images/getall/:id', (req,res)=>{
                 console.log(images);
                 res.status(200).json({images}) ;
             }else throw "No Images Found!";
+        }catch(err) {
+            console.log("ERROR ::", err);
+         }
     
         });
 });

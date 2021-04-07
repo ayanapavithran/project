@@ -16,7 +16,7 @@ export default (props) => {
                 axios.post("http://localhost:50001/api/v1/login",{
                   
                 email: email,
-                password:password,
+                password:md5(password),
             
                 }).then((response)=>{
                     setMessage({
@@ -70,7 +70,7 @@ export default (props) => {
                  <button className ="w3-button w3-blue " type= "button"  onClick={onLogin}> Login</button>
                 
                  <Link to="/forgot">Forgot password</Link>
-                 <Link to="/home">home</Link>
+                 <p></p><Link to="/viewalbum">View Album</Link>
                  <div>
                       
                   </div>
