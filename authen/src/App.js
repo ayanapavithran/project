@@ -9,6 +9,7 @@ import Gallery from './components/Gallery';
 import UploadHome from './components/UploadHome';
 import LoadImages from './components/LoadImages';
 import ViewAlbum from './components/Viewalbum';
+import Color from './components/Color';
 
 const App = () => {
 
@@ -22,6 +23,7 @@ const App = () => {
      <Route path="/upload" component={UploadHome} /> 
        {/* <Route path="/" component={Login} />  */}
        <Route path="/gallery1" component={Gallery} />
+        <Route path="/Color" component={Color} />  
        <Route path="/viewalbum" component={ViewAlbum} /> 
     </Switch>
   </BrowserRouter>
